@@ -291,7 +291,7 @@ export class RedisAdapter extends Adapter {
     // RequestType.ALL_ROOMS = 1          ->      LegacyRequestType.allRooms
     // RequestType.REMOTE_JOIN = 2        ->      LegacyRequestType.remoteJoin
     // RequestType/.REMOTE_LEAVE = 3      ->      LegacyRequestType.remoteLeave
-    // RequestType.REMOTE_DISCONNECT = 4  ->      LegacyRequestType.remoteDisconnect
+    // RequestType.REMOTE_DISCONNECT = 4  ->      LegacyRequestType. remoteDisconnect
     //================================================================================
 
     if(socketIoVersionIsV2) {
