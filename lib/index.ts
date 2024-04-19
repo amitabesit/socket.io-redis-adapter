@@ -24,6 +24,22 @@ enum RequestType {
   BROADCAST_ACK,
 }
 
+// amit_singh_start
+// TODO - Need to add flag - from ENV / ZK
+//  that we are on current server socketIoVersionIsV2 - true / false
+const socketIoVersionIsV2 = true;
+
+enum LegacyRequestType {
+  clients = 0,
+  clientRooms = 1,
+  allRooms = 2,
+  remoteJoin =  3,
+  remoteLeave = 4,
+  customRequest = 5,
+  remoteDisconnect = 6
+}
+// amit_singh_end
+
 interface Request {
   type: RequestType;
   resolve: Function;
@@ -267,6 +283,38 @@ export class RedisAdapter extends Adapter {
     debug("received request %j", request);
 
     let response, socket;
+
+    // amit_singh_start
+
+    //================================================================================
+    //            V8                      ->                  V5
+    // RequestType.ALL_ROOMS = 1          ->      LegacyRequestType.allRooms
+    // RequestType.REMOTE_JOIN = 2        ->      LegacyRequestType.remoteJoin
+    // RequestType/.REMOTE_LEAVE = 3      ->      LegacyRequestType.remoteLeave
+    // RequestType.REMOTE_DISCONNECT = 4  ->      LegacyRequestType.remoteDisconnect
+    //================================================================================
+
+    if(socketIoVersionIsV2) {
+      switch (request.type) {
+        case RequestType.ALL_ROOMS:
+          request.type = LegacyRequestType.allRooms;
+          debug("amit_singh_start [ RequestType.ALL_ROOMS = 1          ->      LegacyRequestType.allRooms ]")
+          break;
+        case RequestType.REMOTE_JOIN:
+          request.type = LegacyRequestType.remoteJoin;
+          debug("amit_singh_start [ RequestType.REMOTE_JOIN = 2        ->      LegacyRequestType.remoteJoin ]")
+          break;
+        case RequestType.REMOTE_LEAVE:
+          request.type = LegacyRequestType.remoteLeave;
+          debug("amit_singh_start [ RequestType/.REMOTE_LEAVE = 3      ->      LegacyRequestType.remoteLeave ]")
+          break;
+        case RequestType.REMOTE_DISCONNECT:
+          request.type = LegacyRequestType.remoteDisconnect;
+          debug("amit_singh_start [ RequestType.REMOTE_DISCONNECT = 4  ->      LegacyRequestType.remoteDisconnect ]")
+          break;
+      }
+    }
+    // amit_singh_end
 
     switch (request.type) {
       case RequestType.SOCKETS:
@@ -536,6 +584,29 @@ export class RedisAdapter extends Adapter {
 
     const request = this.requests.get(requestId);
 
+    // amit_singh_start
+    if(socketIoVersionIsV2) {
+      switch (request.type) {
+        case RequestType.ALL_ROOMS:
+          request.type = LegacyRequestType.allRooms.valueOf();
+          debug("amit_singh_start [ RequestType.ALL_ROOMS = 1          ->      LegacyRequestType.allRooms ]")
+          break;
+        case RequestType.REMOTE_JOIN:
+          request.type = LegacyRequestType.remoteJoin.valueOf();
+          debug("amit_singh_start [ RequestType.REMOTE_JOIN = 2        ->      LegacyRequestType.remoteJoin ]")
+          break;
+        case RequestType.REMOTE_LEAVE:
+          request.type = LegacyRequestType.remoteLeave.valueOf();
+          debug("amit_singh_start [ RequestType/.REMOTE_LEAVE = 3      ->      LegacyRequestType.remoteLeave ]")
+          break;
+        case RequestType.REMOTE_DISCONNECT:
+          request.type = LegacyRequestType.remoteDisconnect.valueOf();
+          debug("amit_singh_start [ RequestType.REMOTE_DISCONNECT = 4  ->      LegacyRequestType.remoteDisconnect ]")
+          break;
+      }
+    }
+    // amit_singh_end
+
     switch (request.type) {
       case RequestType.SOCKETS:
       case RequestType.REMOTE_FETCH:
@@ -782,7 +853,7 @@ export class RedisAdapter extends Adapter {
 
     const request = JSON.stringify({
       uid: this.uid,
-      type: RequestType.REMOTE_JOIN,
+      type:  RequestType.REMOTE_JOIN,
       opts: {
         rooms: [...opts.rooms],
         except: [...opts.except],
