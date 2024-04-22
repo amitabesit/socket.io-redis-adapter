@@ -716,6 +716,7 @@ export class RedisAdapter extends Adapter {
         channel += opts.rooms.keys().next().value + "#";
       }
       debug("amit_singh publishing message to channel %s", channel);
+      debug("amit_singh publishing message to msg %s", msg);
       this.pubClient.publish(channel, msg);
     }
     super.broadcast(packet, opts);
@@ -804,7 +805,8 @@ export class RedisAdapter extends Adapter {
         msgCount: 1,
         rooms: localRooms,
       });
-
+      debug(`amit_singh allRooms - after - JSON.stringify ${request}`)
+      debug(`amit_singh allRooms - requestChannel ${this.requestChannel}`)
       this.pubClient.publish(this.requestChannel, request);
     });
   }
@@ -853,12 +855,14 @@ export class RedisAdapter extends Adapter {
         msgCount: 1,
         sockets: localSockets,
       });
-
+      debug(`amit_singh addSockets - after - JSON.stringify ${request}`)
+      debug(`amit_singh addSockets - requestChannel ${this.requestChannel}`)
       this.pubClient.publish(this.requestChannel, request);
     });
   }
 
   public addSockets(opts: BroadcastOptions, rooms: Room[]) {
+    debug("amit_singh addSockets - 862 - ")
     if (opts.flags?.local) {
       return super.addSockets(opts, rooms);
     }
@@ -872,7 +876,8 @@ export class RedisAdapter extends Adapter {
       },
       rooms: [...rooms],
     });
-
+    debug(`amit_singh addSockets - after - JSON.stringify ${request}`)
+    debug(`amit_singh addSockets - requestChannel ${this.requestChannel}`)
     this.pubClient.publish(this.requestChannel, request);
   }
 
@@ -890,7 +895,8 @@ export class RedisAdapter extends Adapter {
       },
       rooms: [...rooms],
     });
-
+    debug(`amit_singh delSockets - after - JSON.stringify ${request}`)
+    debug(`amit_singh delSockets - requestChannel ${this.requestChannel}`)
     this.pubClient.publish(this.requestChannel, request);
   }
 
@@ -908,7 +914,8 @@ export class RedisAdapter extends Adapter {
       },
       close,
     });
-
+    debug(`amit_singh disconnectSockets - after - JSON.stringify ${request}`)
+    debug(`amit_singh disconnectSockets - requestChannel ${this.requestChannel}`)
     this.pubClient.publish(this.requestChannel, request);
   }
 
@@ -927,7 +934,8 @@ export class RedisAdapter extends Adapter {
       type: RequestType.SERVER_SIDE_EMIT,
       data: packet,
     });
-
+    debug(`amit_singh serverSideEmit - after - JSON.stringify ${request}`)
+    debug(`amit_singh serverSideEmit - requestChannel ${this.requestChannel}`)
     this.pubClient.publish(this.requestChannel, request);
   }
 
@@ -969,7 +977,8 @@ export class RedisAdapter extends Adapter {
       resolve: ack,
       responses: [],
     });
-
+    debug(`amit_singh serverSideEmitWithAck - after - JSON.stringify ${request}`)
+    debug(`amit_singh serverSideEmitWithAck - requestChannel ${this.requestChannel}`)
     this.pubClient.publish(this.requestChannel, request);
   }
 
