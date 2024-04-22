@@ -362,7 +362,9 @@ export class RedisAdapter extends Adapter {
         }
 
         socket.join(request.room);
-
+        if (socketIoVersionIsV2) {
+          request.type = LegacyRequestType.remoteJoin;
+        }
         response = JSON.stringify({
           requestId: request.requestId,
         });
