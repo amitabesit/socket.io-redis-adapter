@@ -3,7 +3,7 @@ import msgpack = require("notepack.io");
 import { Adapter, BroadcastOptions, Room } from "socket.io-adapter";
 import { PUBSUB } from "./util";
 
-const debug = require("debug")("socket.io-redis");
+  const debug = require("debug")("socket.io-redis");
 
 module.exports = exports = createAdapter;
 
@@ -105,7 +105,7 @@ export function createAdapter(
   subClient: any,
   opts?: Partial<RedisAdapterOptions>
 ) {
-  console.log( "------------ createAdapter called ------")
+  debug( "amit_singh ------------ createAdapter called ------")
   return function (nsp) {
     return new RedisAdapter(nsp, pubClient, subClient, opts);
   };
@@ -221,25 +221,25 @@ export class RedisAdapter extends Adapter {
 
     const channelMatches = channel.startsWith(this.channel);
     if (!channelMatches) {
-      return debug("ignore different channel");
+      return debug("amit_singh ignore different channel");
     }
 
     const room = channel.slice(this.channel.length, -1);
     if (room !== "" && !this.hasRoom(room)) {
-      return debug("ignore unknown room %s", room);
+      return debug("amit_singh ignore unknown room %s", room);
     }
 
     const args = this.parser.decode(msg);
 
     const [uid, packet, opts] = args;
-    if (this.uid === uid) return debug("ignore same uid");
+    if (this.uid === uid) return debug("amit_singh ignore same uid");
 
     if (packet && packet.nsp === undefined) {
       packet.nsp = "/";
     }
 
     if (!packet || packet.nsp !== this.nsp.name) {
-      return debug("ignore different namespace");
+      return debug("amit_singh ignore different namespace");
     }
     opts.rooms = new Set(opts.rooms);
     opts.except = new Set(opts.except);
@@ -259,12 +259,13 @@ export class RedisAdapter extends Adapter {
    * @private
    */
   private async onrequest(channel, msg) {
+    debug("amir_singh onrequest called")
     channel = channel.toString();
 
     if (channel.startsWith(this.responseChannel)) {
       return this.onresponse(channel, msg);
     } else if (!channel.startsWith(this.requestChannel)) {
-      return debug("ignore different channel");
+      return debug("amit_singh ignore different channel");
     }
 
     let request;
@@ -277,11 +278,11 @@ export class RedisAdapter extends Adapter {
         request = this.parser.decode(msg);
       }
     } catch (err) {
-      debug("ignoring malformed request");
+      debug("amit_singh ignoring malformed request");
       return;
     }
 
-    debug("received request %j", request);
+    debug("amit_singh received request %j", request);
 
     let response, socket;
 
@@ -299,24 +300,24 @@ export class RedisAdapter extends Adapter {
       switch (request.type) {
         case RequestType.ALL_ROOMS:
           request.type = LegacyRequestType.allRooms;
-          debug("amit_singh_start [ RequestType.ALL_ROOMS = 1          ->      LegacyRequestType.allRooms ]")
+          debug("amit_singh amit_singh_start [ RequestType.ALL_ROOMS = 1          ->      LegacyRequestType.allRooms ]")
           break;
         case RequestType.REMOTE_JOIN:
           request.type = LegacyRequestType.remoteJoin.valueOf();
-          debug("amit_singh_start [ RequestType.REMOTE_JOIN = 2        ->      LegacyRequestType.remoteJoin ]")
+          debug("amit_singh amit_singh_start [ RequestType.REMOTE_JOIN = 2        ->      LegacyRequestType.remoteJoin ]")
           break;
         case RequestType.REMOTE_LEAVE:
           request.type = LegacyRequestType.remoteLeave;
-          debug("amit_singh_start [ RequestType/.REMOTE_LEAVE = 3      ->      LegacyRequestType.remoteLeave ]")
+          debug("amit_singh amit_singh_start [ RequestType/.REMOTE_LEAVE = 3      ->      LegacyRequestType.remoteLeave ]")
           break;
         case RequestType.REMOTE_DISCONNECT:
           request.type = LegacyRequestType.remoteDisconnect;
-          debug("amit_singh_start [ RequestType.REMOTE_DISCONNECT = 4  ->      LegacyRequestType.remoteDisconnect ]")
+          debug("amit_singh amit_singh_start [ RequestType.REMOTE_DISCONNECT = 4  ->      LegacyRequestType.remoteDisconnect ]")
           break;
       }
     }*/
     // amit_singh_end
-
+    debug(`amir_singh  request.type - ${request.type}`)
     switch (request.type) {
       case RequestType.SOCKETS:
         if (this.requests.has(request.requestId)) {
@@ -347,9 +348,10 @@ export class RedisAdapter extends Adapter {
         break;
 
       case RequestType.REMOTE_JOIN:
-        console.log( "------------ remote join ------")
+        debug( "amit_singh------------ remote join ------")
         if (!socketIoVersionIsV2) {
           if (request.opts) {
+            debug(`amit_singh  request.opts present`)
             const opts = {
               rooms: new Set<Room>(request.opts.rooms),
               except: new Set<Room>(request.opts.except),
@@ -358,8 +360,10 @@ export class RedisAdapter extends Adapter {
           }
         }
 
+        debug(`amit_singh  request.type - ${request.type}`)
         socket = this.nsp.sockets.get(request.sid);
         if (!socket) {
+          debug(`amit_singh  return`)
           return;
         }
 
@@ -370,7 +374,9 @@ export class RedisAdapter extends Adapter {
         response = JSON.stringify({
           requestId: request.requestId,
         });
-
+        debug(`amit_singh  publishResponse request.type now - ${request.type}`)
+        debug(`amit_singh  publishResponse request - ${request}`)
+        debug(`amit_singh  publishResponse response - ${response}`)
         this.publishResponse(request, response);
         break;
 
@@ -450,7 +456,7 @@ export class RedisAdapter extends Adapter {
 
       case RequestType.SERVER_SIDE_EMIT:
         if (request.uid === this.uid) {
-          debug("ignore same uid");
+          debug("amit_singh ignore same uid");
           return;
         }
         const withAck = request.requestId !== undefined;
@@ -465,7 +471,7 @@ export class RedisAdapter extends Adapter {
             return;
           }
           called = true;
-          debug("calling acknowledgement with %j", arg);
+          debug("amit_singh calling acknowledgement with %j", arg);
           this.pubClient.publish(
             this.responseChannel,
             JSON.stringify({
@@ -494,7 +500,7 @@ export class RedisAdapter extends Adapter {
           request.packet,
           opts,
           (clientCount) => {
-            debug("waiting for %d client acknowledgements", clientCount);
+            debug("amit_singh waiting for %d client acknowledgements", clientCount);
             this.publishResponse(
               request,
               JSON.stringify({
@@ -505,7 +511,7 @@ export class RedisAdapter extends Adapter {
             );
           },
           (arg) => {
-            debug("received acknowledgement with value %j", arg);
+            debug("amit_singh received acknowledgement with value %j", arg);
 
             this.publishResponse(
               request,
@@ -521,7 +527,7 @@ export class RedisAdapter extends Adapter {
       }
 
       default:
-        debug("ignoring unknown request type: %s", request.type);
+        debug("amit_singh ignoring unknown request type: %s", request.type);
     }
   }
 
@@ -535,7 +541,7 @@ export class RedisAdapter extends Adapter {
     const responseChannel = this.publishOnSpecificResponseChannel
       ? `${this.responseChannel}${request.uid}#`
       : this.responseChannel;
-    debug("publishing response to channel %s", responseChannel);
+    debug("amit_singh publishing response to channel %s", responseChannel);
     this.pubClient.publish(responseChannel, response);
   }
 
@@ -555,7 +561,7 @@ export class RedisAdapter extends Adapter {
         response = this.parser.decode(msg);
       }
     } catch (err) {
-      debug("ignoring malformed response");
+      debug("amit_singh ignoring malformed response");
       return;
     }
 
@@ -582,11 +588,11 @@ export class RedisAdapter extends Adapter {
       !requestId ||
       !(this.requests.has(requestId) || this.ackRequests.has(requestId))
     ) {
-      debug("ignoring unknown request");
+      debug("amit_singh ignoring unknown request");
       return;
     }
 
-    debug("received response %j", response);
+    debug("amit_singh received response %j", response);
 
     const request = this.requests.get(requestId);
 
@@ -595,19 +601,19 @@ export class RedisAdapter extends Adapter {
       switch (request.type) {
         case RequestType.ALL_ROOMS:
           request.type = LegacyRequestType.allRooms.valueOf();
-          debug("amit_singh_start [ RequestType.ALL_ROOMS = 1          ->      LegacyRequestType.allRooms ]")
+          debug("amit_singh amit_singh_start [ RequestType.ALL_ROOMS = 1          ->      LegacyRequestType.allRooms ]")
           break;
         case RequestType.REMOTE_JOIN:
           request.type = LegacyRequestType.remoteJoin.valueOf();
-          debug("amit_singh_start [ RequestType.REMOTE_JOIN = 2        ->      LegacyRequestType.remoteJoin ]")
+          debug("amit_singh amit_singh_start [ RequestType.REMOTE_JOIN = 2        ->      LegacyRequestType.remoteJoin ]")
           break;
         case RequestType.REMOTE_LEAVE:
           request.type = LegacyRequestType.remoteLeave.valueOf();
-          debug("amit_singh_start [ RequestType/.REMOTE_LEAVE = 3      ->      LegacyRequestType.remoteLeave ]")
+          debug("amit_singh amit_singh_start [ RequestType/.REMOTE_LEAVE = 3      ->      LegacyRequestType.remoteLeave ]")
           break;
         case RequestType.REMOTE_DISCONNECT:
           request.type = LegacyRequestType.remoteDisconnect.valueOf();
-          debug("amit_singh_start [ RequestType.REMOTE_DISCONNECT = 4  ->      LegacyRequestType.remoteDisconnect ]")
+          debug("amit_singh amit_singh_start [ RequestType.REMOTE_DISCONNECT = 4  ->      LegacyRequestType.remoteDisconnect ]")
           break;
       }
     }*/
@@ -681,7 +687,7 @@ export class RedisAdapter extends Adapter {
         break;
 
       default:
-        debug("ignoring unknown request type: %s", request.type);
+        debug("amit_singh ignoring unknown request type: %s", request.type);
     }
   }
 
@@ -709,7 +715,7 @@ export class RedisAdapter extends Adapter {
       if (opts.rooms && opts.rooms.size === 1) {
         channel += opts.rooms.keys().next().value + "#";
       }
-      debug("publishing message to channel %s", channel);
+      debug("amit_singh publishing message to channel %s", channel);
       this.pubClient.publish(channel, msg);
     }
     super.broadcast(packet, opts);
