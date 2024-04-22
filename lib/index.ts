@@ -294,14 +294,14 @@ export class RedisAdapter extends Adapter {
     // RequestType.REMOTE_DISCONNECT = 4  ->      LegacyRequestType. remoteDisconnect
     //================================================================================
 
-    if(socketIoVersionIsV2) {
+   /* if(socketIoVersionIsV2) {
       switch (request.type) {
         case RequestType.ALL_ROOMS:
           request.type = LegacyRequestType.allRooms;
           debug("amit_singh_start [ RequestType.ALL_ROOMS = 1          ->      LegacyRequestType.allRooms ]")
           break;
         case RequestType.REMOTE_JOIN:
-          request.type = LegacyRequestType.remoteJoin;
+          request.type = LegacyRequestType.remoteJoin.valueOf();
           debug("amit_singh_start [ RequestType.REMOTE_JOIN = 2        ->      LegacyRequestType.remoteJoin ]")
           break;
         case RequestType.REMOTE_LEAVE:
@@ -313,7 +313,7 @@ export class RedisAdapter extends Adapter {
           debug("amit_singh_start [ RequestType.REMOTE_DISCONNECT = 4  ->      LegacyRequestType.remoteDisconnect ]")
           break;
       }
-    }
+    }*/
     // amit_singh_end
 
     switch (request.type) {
@@ -346,12 +346,14 @@ export class RedisAdapter extends Adapter {
         break;
 
       case RequestType.REMOTE_JOIN:
-        if (request.opts) {
-          const opts = {
-            rooms: new Set<Room>(request.opts.rooms),
-            except: new Set<Room>(request.opts.except),
-          };
-          return super.addSockets(opts, request.rooms);
+        if (!socketIoVersionIsV2) {
+          if (request.opts) {
+            const opts = {
+              rooms: new Set<Room>(request.opts.rooms),
+              except: new Set<Room>(request.opts.except),
+            };
+            return super.addSockets(opts, request.rooms);
+          }
         }
 
         socket = this.nsp.sockets.get(request.sid);
@@ -585,7 +587,7 @@ export class RedisAdapter extends Adapter {
     const request = this.requests.get(requestId);
 
     // amit_singh_start
-    if(socketIoVersionIsV2) {
+   /* if(socketIoVersionIsV2) {
       switch (request.type) {
         case RequestType.ALL_ROOMS:
           request.type = LegacyRequestType.allRooms.valueOf();
@@ -604,7 +606,7 @@ export class RedisAdapter extends Adapter {
           debug("amit_singh_start [ RequestType.REMOTE_DISCONNECT = 4  ->      LegacyRequestType.remoteDisconnect ]")
           break;
       }
-    }
+    }*/
     // amit_singh_end
 
     switch (request.type) {
