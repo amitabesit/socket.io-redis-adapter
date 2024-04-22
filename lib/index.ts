@@ -862,22 +862,21 @@ export class RedisAdapter extends Adapter {
   }
 
   public addSockets(opts: BroadcastOptions, rooms: Room[]) {
-    debug("amit_singh addSockets - 862 - ")
     if (opts.flags?.local) {
       return super.addSockets(opts, rooms);
     }
+    debug(`amit_singh addSockets - Changing RequestType.REMOTE_JOIN to LegacyRequestType.remoteJoin` )
 
     const request = JSON.stringify({
       uid: this.uid,
-      type:  RequestType.REMOTE_JOIN,
+      type:  socketIoVersionIsV2 ? LegacyRequestType.remoteJoin : RequestType.REMOTE_JOIN,
       opts: {
         rooms: [...opts.rooms],
         except: [...opts.except],
       },
       rooms: [...rooms],
     });
-    debug(`amit_singh addSockets - after - JSON.stringify ${request}`)
-    debug(`amit_singh addSockets - requestChannel ${this.requestChannel}`)
+    debug(`amit_singh addSockets - [requestChannel] -> ${this.requestChannel}  [request] -> ${request}` )
     this.pubClient.publish(this.requestChannel, request);
   }
 

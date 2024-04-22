@@ -1,6 +1,6 @@
 {
   "name": "socket.io-redis-adapter-amit",
-  "version": "8.3.0-alpha-4",
+  "version": "8.3.0-alpha-5",
   "description": "The Socket.IO Redis adapter, allowing to broadcast events between several Socket.IO servers",
   "license": "MIT",
   "repository": {
