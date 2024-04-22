@@ -105,6 +105,7 @@ export function createAdapter(
   subClient: any,
   opts?: Partial<RedisAdapterOptions>
 ) {
+  console.log( "------------ createAdapter called ------")
   return function (nsp) {
     return new RedisAdapter(nsp, pubClient, subClient, opts);
   };
@@ -346,6 +347,7 @@ export class RedisAdapter extends Adapter {
         break;
 
       case RequestType.REMOTE_JOIN:
+        console.log( "------------ remote join ------")
         if (!socketIoVersionIsV2) {
           if (request.opts) {
             const opts = {
